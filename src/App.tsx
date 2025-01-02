@@ -1,24 +1,41 @@
-import React from 'react';
-import logo from './logo.svg';
+import { ChangeEvent, SyntheticEvent, useState } from 'react';
 import './App.css';
+import CardList from './Components/CardList/CardList';
+import Search from './Components/Search/Search';
+import { CompanySearch } from './company';
+import { searchCompanies } from './api';
 
 function App() {
+  const [search, setSearch] = useState<string>("");
+  const [portfolioValues, setPortfolioValues] = useState<string[]>([])
+  const [searchResult, setSearchResult] = useState<CompanySearch[]>([]);
+  const [serverError, setServerError] = useState<string>("");
+
+  const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
+      setSearch(e.target.value);
+  };
+
+  const onPortfolioCreate = (e: any) => {
+    e.preventDefault();
+    console.log(e);
+    // const updatedPortfolio = [...portfolioValues, e.target[0].value];
+    // setPortfolioValues(updatedPortfolio);
+  }
+
+  const onSearchSubmit = async (e: SyntheticEvent) => {
+    e.preventDefault();
+      const result = await searchCompanies(search);
+      if(typeof(result) === "string") {
+        setServerError(result);
+      } else if (Array.isArray(result.data)){
+        setSearchResult(result.data);
+      }
+      console.log(searchResult);
+  };
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Search onSearchSubmit={onSearchSubmit} search={search} handleSearchChange={handleSearchChange} />
+      <CardList searchResult={searchResult} onPortfolioCreate={onPortfolioCreate}/>
     </div>
   );
 }
